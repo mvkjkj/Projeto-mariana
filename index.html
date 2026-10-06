@@ -1,0 +1,1852 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EPT ATIVIDADES - Gestão Escolar & AI Tutor Socrático</title>
+  
+  <!-- Tipografia Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js para o Gráfico -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-body: #0b0f19;
+      --bg-surface: #151e32;
+      --bg-card: #1e293b;
+      --bg-input: #0f172a;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --accent: #06b6d4;
+      --accent-hover: #0891b2;
+      --ai-purple: #8b5cf6;
+      --ai-purple-hover: #7c3aed;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.5);
+      --radius-lg: 16px;
+      --radius-md: 10px;
+      --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    [data-theme="light"] {
+      --bg-body: #f1f5f9;
+      --bg-surface: #ffffff;
+      --bg-card: #f8fafc;
+      --bg-input: #ffffff;
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --accent: #0891b2;
+      --accent-hover: #0e7490;
+      --ai-purple: #7c3aed;
+      --ai-purple-hover: #6d28d9;
+      --success: #059669;
+      --warning: #d97706;
+      --danger: #e11d48;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border: rgba(0, 0, 0, 0.1);
+      --border-focus: rgba(79, 70, 229, 0.4);
+      --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+      --shadow-lg: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-body);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* Navbar */
+    .navbar {
+      background: rgba(21, 30, 50, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.8rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      box-shadow: var(--shadow-sm);
+    }
+
+    [data-theme="light"] .navbar {
+      background: rgba(255, 255, 255, 0.85);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      background: linear-gradient(135deg, var(--primary), var(--ai-purple));
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: 0 4px 14px rgba(139, 92, 246, 0.4);
+    }
+
+    .brand-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, var(--text-main), var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .role-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .role-badge.aluno {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .role-badge.prof {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* Container Principal */
+    .app-container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1.8rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 1.8rem;
+    }
+
+    /* Grid do Dashboard */
+    .dashboard-top {
+      display: grid;
+      grid-template-columns: 2.2fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .metric-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .metric-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: rgba(255, 255, 255, 0.04);
+      flex-shrink: 0;
+    }
+
+    .metric-data h4 {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    .metric-data .value {
+      font-size: 1.7rem;
+      font-weight: 800;
+      margin-top: 2px;
+      line-height: 1.2;
+    }
+
+    .chart-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      max-width: 260px;
+      height: 180px;
+    }
+
+    /* Layout Principal */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.8rem;
+    }
+
+    .panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.8rem;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Formulários e Inputs */
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    input, select, textarea {
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.7rem 0.9rem;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--border-focus);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+      gap: 0.8rem;
+    }
+
+    /* Botões */
+    .btn {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1.2rem;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-ai {
+      background: linear-gradient(135deg, var(--ai-purple), var(--primary));
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-ai:hover {
+      background: linear-gradient(135deg, var(--ai-purple-hover), var(--primary-hover));
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4);
+    }
+
+    .btn-accent {
+      background: var(--accent);
+    }
+
+    .btn-accent:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+    }
+
+    .btn-sm {
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+    }
+
+    .btn-danger-icon, .btn-action-icon {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: 6px;
+      transition: all 0.2s;
+      font-size: 0.9rem;
+    }
+
+    .btn-danger-icon:hover {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--danger);
+    }
+
+    .btn-action-icon:hover {
+      background: rgba(99, 102, 241, 0.15);
+      color: var(--primary);
+    }
+
+    /* Caixa de Importação */
+    .import-box {
+      border: 2px dashed var(--border);
+      padding: 1rem;
+      border-radius: var(--radius-md);
+      text-align: center;
+      background: rgba(15, 23, 42, 0.2);
+      margin-bottom: 0.8rem;
+      transition: border-color 0.2s;
+    }
+
+    .import-box:hover {
+      border-color: var(--primary);
+    }
+
+    /* Tabelas */
+    .table-wrapper {
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: var(--bg-card);
+      padding: 0.75rem 0.6rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    th:first-child, td:first-child {
+      text-align: left;
+      padding-left: 1rem;
+    }
+
+    td {
+      padding: 0.75rem 0.6rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+
+    tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .status-badge {
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-block;
+    }
+
+    .status-badge.approved {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+    }
+
+    .status-badge.warning {
+      background: rgba(244, 63, 94, 0.15);
+      color: var(--danger);
+    }
+
+    /* Grid de Tarefas */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 1.2rem;
+    }
+
+    .task-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.8rem;
+      border-left: 4px solid var(--accent);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .task-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .task-title {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--text-main);
+    }
+
+    .task-tags {
+      display: flex;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: var(--bg-surface);
+      padding: 3px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-weight: 500;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* ======================================= */
+    /* CALENDÁRIO ESCOLAR (SILVÂNIA - GO)     */
+    /* ======================================= */
+    .calendar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+
+    .cal-day-head {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 6px;
+      text-transform: uppercase;
+    }
+
+    .cal-day {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 52px;
+      padding: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      font-size: 0.82rem;
+      font-weight: 600;
+      position: relative;
+      cursor: default;
+      transition: all 0.2s;
+    }
+
+    .cal-day.empty {
+      background: transparent;
+      border-color: transparent;
+    }
+
+    .cal-day.weekend {
+      opacity: 0.55;
+      background: rgba(15, 23, 42, 0.4);
+    }
+
+    .cal-day.feriado-nacional {
+      background: rgba(244, 63, 94, 0.15);
+      border-color: rgba(244, 63, 94, 0.4);
+      color: #fca5a5;
+    }
+
+    .cal-day.feriado-municipal {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fcd34d;
+    }
+
+    .cal-day.today {
+      border: 2px solid var(--primary);
+    }
+
+    .cal-event-tag {
+      font-size: 0.65rem;
+      line-height: 1.1;
+      margin-top: 3px;
+      padding: 2px 4px;
+      border-radius: 4px;
+      background: rgba(0, 0, 0, 0.4);
+      word-break: break-word;
+      max-width: 100%;
+    }
+
+    .calendar-legend {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* ======================================= */
+    /* MODAL DE CHAT DA IA SOCRÁTICA          */
+    /* ======================================= */
+    .ai-modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .ai-modal-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 600px;
+      height: 650px;
+      max-height: 90vh;
+      border-radius: var(--radius-lg);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      animation: modalScale 0.25s ease-out;
+    }
+
+    @keyframes modalScale {
+      from { transform: scale(0.92); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .ai-header {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.15));
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.4rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ai-header-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .ai-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--ai-purple), var(--primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+    }
+
+    .ai-chat-body {
+      flex: 1;
+      padding: 1.2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: var(--bg-body);
+    }
+
+    .chat-bubble {
+      max-width: 82%;
+      padding: 0.85rem 1.1rem;
+      border-radius: 14px;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      position: relative;
+      word-wrap: break-word;
+    }
+
+    .chat-bubble.bot {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      align-self: flex-start;
+      border-top-left-radius: 2px;
+    }
+
+    .chat-bubble.user {
+      background: var(--primary);
+      color: #ffffff;
+      align-self: flex-end;
+      border-top-right-radius: 2px;
+    }
+
+    .chat-bubble .socratic-tag {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--ai-purple);
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    [data-theme="light"] .chat-bubble .socratic-tag {
+      color: #6d28d9;
+    }
+
+    .typing-indicator {
+      align-self: flex-start;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg-card);
+      border-radius: 12px;
+    }
+
+    .ai-footer {
+      padding: 0.9rem 1.2rem;
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .ai-footer input {
+      flex: 1;
+    }
+
+    /* Toast Container */
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: var(--bg-surface);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      padding: 0.8rem 1.2rem;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-lg);
+      font-size: 0.88rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    }
+
+    .toast.success { border-left-color: var(--success); }
+    .toast.danger { border-left-color: var(--danger); }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; }
+    }
+
+    /* Modais Genéricos */
+    .modal-auth {
+      max-width: 400px !important;
+      height: auto !important;
+    }
+
+    /* Suporte a Impressão */
+    @media print {
+      body { background: white; color: black; }
+      .navbar, .import-box, #panel-form-atividade, #panel-form-nota, .toolbar, .nav-actions, .btn-danger-icon, .btn-action-icon, .ai-modal-overlay { display: none !important; }
+      .panel { border: none; box-shadow: none; padding: 0; }
+      .app-container { max-width: 100%; padding: 0; }
+      .table-wrapper { max-height: none; overflow: visible; }
+      th { background: #f0f0f0; color: black; }
+      td { border-bottom: 1px solid #ccc; }
+    }
+
+    @media (max-width: 992px) {
+      .dashboard-top {
+        grid-template-columns: 1fr;
+      }
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .app-container {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body data-theme="dark">
+
+  <nav class="navbar">
+    <div class="brand">
+      <div class="brand-icon">🤖</div>
+      <div class="brand-title">EPT ATIVIDADES <span style="font-size: 0.7rem; background: var(--ai-purple); color: #fff; padding: 2px 6px; border-radius: 4px; vertical-align: middle; margin-left: 6px;">SILVÂNIA - GO</span></div>
+    </div>
+    <div class="nav-actions">
+      <span id="badge-perfil" class="role-badge aluno">🎓 MODO ALUNO</span>
+      <button id="btn-toggle-perfil" class="btn btn-outline btn-sm" onclick="abrirModalAuth()">🔒 Área do Professor</button>
+      <button class="btn btn-ai btn-sm" onclick="abrirModalIA()">🤖 Tutor Socrático IA</button>
+      <button class="btn btn-outline btn-sm" onclick="toggleTheme()" title="Alternar Tema Claro/Escuro">🌓 Tema</button>
+      <button class="btn btn-outline btn-sm prof-only" onclick="gerarAlunosExemplo()" style="display: none;">⚡ Gerar Exemplo</button>
+      <button class="btn btn-outline btn-sm prof-only" onclick="exportarRelatorio()" style="display: none;">📥 Exportar CSV</button>
+      <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Imprimir</button>
+    </div>
+  </nav>
+
+  <div class="app-container">
+
+    <!-- Dashboard Top: Métricas Principais + Gráfico -->
+    <div class="dashboard-top">
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-icon" style="color: var(--primary);">📚</div>
+          <div class="metric-data">
+            <h4>Atividades</h4>
+            <div class="value" id="total-atividades">0</div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon" style="color: var(--accent);">👨‍🎓</div>
+          <div class="metric-data">
+            <h4>Alunos Avaliados</h4>
+            <div class="value" id="total-alunos">0</div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon" style="color: var(--success);">📈</div>
+          <div class="metric-data">
+            <h4>Média Anual Geral</h4>
+            <div class="value" id="media-geral">0.0</div>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-icon" style="color: var(--warning);">🏆</div>
+          <div class="metric-data">
+            <h4>Aprovação (%)</h4>
+            <div class="value" id="taxa-aprovacao">0%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-panel">
+        <h4 style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.4rem; font-weight: 700;">Rendimento Geral</h4>
+        <div class="chart-container">
+          <canvas id="graficoStatus"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALENDÁRIO ESCOLAR & FERIADOS DE SILVÂNIA-GO -->
+    <section class="panel full-width">
+      <div class="panel-header">
+        <div class="panel-title">📅 Calendário Escolar & Feriados (Silvânia - GO)</div>
+        <div class="toolbar">
+          <button class="btn btn-outline btn-sm" onclick="mudarMesCalendario(-1)">❮ Anterior</button>
+          <span id="cal-mes-ano" style="font-weight: 700; font-size: 0.95rem; min-width: 140px; text-align: center;">--</span>
+          <button class="btn btn-outline btn-sm" onclick="mudarMesCalendario(1)">Próximo ❯</button>
+        </div>
+      </div>
+
+      <div class="calendar-container">
+        <div class="calendar-grid">
+          <div class="cal-day-head">Dom</div>
+          <div class="cal-day-head">Seg</div>
+          <div class="cal-day-head">Ter</div>
+          <div class="cal-day-head">Qua</div>
+          <div class="cal-day-head">Qui</div>
+          <div class="cal-day-head">Sex</div>
+          <div class="cal-day-head">Sáb</div>
+        </div>
+        <div id="cal-days-grid" class="calendar-grid">
+          <!-- Renderizado via JS -->
+        </div>
+
+        <div class="calendar-legend">
+          <div class="legend-item"><div class="legend-dot" style="background: var(--bg-card); border: 1px solid var(--border);"></div> Dia Letivo</div>
+          <div class="legend-item"><div class="legend-dot" style="background: rgba(15, 23, 42, 0.4);"></div> Fim de Semana</div>
+          <div class="legend-item"><div class="legend-dot" style="background: rgba(244, 63, 94, 0.4);"></div> Feriado Nacional</div>
+          <div class="legend-item"><div class="legend-dot" style="background: rgba(245, 158, 11, 0.4);"></div> Feriado Municipal (Silvânia - GO)</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="main-grid">
+
+      <!-- Form 1: Publicar ou Editar Tarefas (APENAS PROFESSOR) -->
+      <section class="panel prof-only" id="panel-form-atividade" style="display: none;">
+        <div class="panel-header">
+          <div class="panel-title" id="form-atividade-title">📤 Cadastrar Nova Tarefa</div>
+          <button id="btn-cancelar-edit-atividade" class="btn btn-outline btn-sm" style="display: none;" onclick="cancelarEdicaoAtividade()">Cancelar</button>
+        </div>
+        <form id="form-atividade">
+          <input type="hidden" id="edit-atividade-id">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="turma">Turma</label>
+              <select id="turma" required>
+                <option value="">Selecione...</option>
+                <option value="1º EPT">1º EPT</option>
+                <option value="1º B">1º B</option>
+                <option value="2º EPT">2º EPT</option>
+                <option value="2º B">2º B</option>
+                <option value="3º EPT">3º EPT</option>
+                <option value="3º B">3º B</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="disciplina">Disciplina</label>
+              <input type="text" id="disciplina" placeholder="Ex: Informática, Matemática" required>
+            </div>
+            <div class="form-group">
+              <label for="prazo">Data Limite</label>
+              <input type="date" id="prazo" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="titulo">Título da Atividade</label>
+            <input type="text" id="titulo" placeholder="Ex: Exercícios do Capítulo 3" required>
+          </div>
+
+          <div class="form-group">
+            <label for="descricao">Instruções / Conteúdo</label>
+            <textarea id="descricao" rows="3" placeholder="Descreva os detalhes da tarefa ou links..." required></textarea>
+          </div>
+
+          <button type="submit" id="btn-submit-atividade" class="btn" style="width: 100%;">Publicar Atividade</button>
+        </form>
+      </section>
+
+      <!-- Form 2: Registro de Notas + CSV (APENAS PROFESSOR) -->
+      <section class="panel prof-only" id="panel-form-nota" style="display: none;">
+        <div class="panel-header">
+          <div class="panel-title" id="form-nota-title">📊 Lançamento de Notas</div>
+          <button id="btn-cancelar-edit-nota" class="btn btn-outline btn-sm" style="display: none;" onclick="cancelarEdicaoNota()">Cancelar</button>
+        </div>
+        
+        <!-- Área de Importação CSV -->
+        <div class="import-box">
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 6px;">📁 <strong>Importar Lista por CSV (Turma, Nome, N1, N2, N3, N4):</strong></p>
+          <input type="file" id="input-csv" accept=".csv" style="display: none;" onchange="importarCSV(event)">
+          <button class="btn btn-outline btn-sm" style="width: 100%; font-size: 0.82rem;" onclick="document.getElementById('input-csv').click()">Selecionar Arquivo .CSV</button>
+        </div>
+
+        <form id="form-nota">
+          <input type="hidden" id="edit-nota-id">
+          <div class="form-row">
+            <div class="form-group" style="grid-column: span 2;">
+              <label for="aluno-turma">Turma do Aluno</label>
+              <select id="aluno-turma" required>
+                <option value="">Selecione...</option>
+                <option value="1º EPT">1º EPT</option>
+                <option value="1º B">1º B</option>
+                <option value="2º EPT">2º EPT</option>
+                <option value="2º B">2º B</option>
+                <option value="3º EPT">3º EPT</option>
+                <option value="3º B">3º B</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column: span 3;">
+              <label for="aluno-nome">Nome Completo</label>
+              <input type="text" id="aluno-nome" placeholder="Ex: Gabriel Silva" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nota1">1º Bim</label>
+              <input type="number" id="nota1" placeholder="0-10" step="0.1" min="0" max="10" required>
+            </div>
+            <div class="form-group">
+              <label for="nota2">2º Bim</label>
+              <input type="number" id="nota2" placeholder="0-10" step="0.1" min="0" max="10" required>
+            </div>
+            <div class="form-group">
+              <label for="nota3">3º Bim</label>
+              <input type="number" id="nota3" placeholder="0-10" step="0.1" min="0" max="10" required>
+            </div>
+            <div class="form-group">
+              <label for="nota4">4º Bim</label>
+              <input type="number" id="nota4" placeholder="0-10" step="0.1" min="0" max="10" required>
+            </div>
+          </div>
+
+          <button type="submit" id="btn-submit-nota" class="btn btn-accent" style="width: 100%;">Salvar Registro de Notas</button>
+        </form>
+      </section>
+
+      <!-- Seção: Tabela de Notas com Filtros por Turma -->
+      <section class="panel full-width">
+        <div class="panel-header">
+          <div class="panel-title">📋 Boletos de Notas e Situação dos Alunos</div>
+          <div class="toolbar">
+            <select id="filtro-turma-tabela" onchange="renderizarNotas()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+              <option value="">Todas as Turmas</option>
+              <option value="1º EPT">1º EPT</option>
+              <option value="1º B">1º B</option>
+              <option value="2º EPT">2º EPT</option>
+              <option value="2º B">2º B</option>
+              <option value="3º EPT">3º EPT</option>
+              <option value="3º B">3º B</option>
+            </select>
+            <select id="filtro-status-tabela" onchange="renderizarNotas()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+              <option value="">Todos os Status</option>
+              <option value="Aprovado">Aprovados</option>
+              <option value="Recuperação">Em Recuperação</option>
+            </select>
+            <input type="text" id="busca-aluno" placeholder="🔍 Buscar aluno..." oninput="renderizarNotas()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Turma</th>
+                <th>Aluno</th>
+                <th>B1</th>
+                <th>B2</th>
+                <th>B3</th>
+                <th>B4</th>
+                <th>Média</th>
+                <th>Status</th>
+                <th class="prof-only-col" style="display: none;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-notas">
+              <!-- Inserido dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Seção: Atividades Publicadas com Filtro de Turma -->
+      <section class="panel full-width">
+        <div class="panel-header">
+          <div class="panel-title">📚 Mural de Atividades e Tarefas</div>
+          <div class="toolbar">
+            <select id="filtro-turma-atividade" onchange="renderizarAtividades()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+              <option value="">Todas as Turmas</option>
+              <option value="1º EPT">1º EPT</option>
+              <option value="1º B">1º B</option>
+              <option value="2º EPT">2º EPT</option>
+              <option value="2º B">2º B</option>
+              <option value="3º EPT">3º EPT</option>
+              <option value="3º B">3º B</option>
+            </select>
+            <input type="text" id="busca-atividade" placeholder="🔍 Buscar atividade..." oninput="renderizarAtividades()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+          </div>
+        </div>
+
+        <div id="lista-atividades" class="cards-grid">
+          <!-- Inserido dinamicamente -->
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- MODAL AUTENTICAÇÃO PROFESSOR -->
+  <div class="ai-modal-overlay" id="authModal">
+    <div class="ai-modal-container modal-auth">
+      <div class="ai-header">
+        <h3 style="font-size: 1rem; font-weight: 700;">🔒 Autenticação de Professor</h3>
+        <button class="btn btn-outline btn-sm" onclick="fecharModalAuth()">✕</button>
+      </div>
+      <form style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;" onsubmit="autenticarProfessor(event)">
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Digite a senha de acesso para gerenciar tarefas e notas:</p>
+        <div class="form-group">
+          <label for="senha-prof">Senha do Professor</label>
+          <input type="password" id="senha-prof" placeholder="Senha (Padrão: 1234)" required autofocus>
+        </div>
+        <button type="submit" class="btn" style="width: 100%;">Entrar como Professor</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL IA SOCRÁTICA -->
+  <div class="ai-modal-overlay" id="aiModal">
+    <div class="ai-modal-container">
+      <div class="ai-header">
+        <div class="ai-header-info">
+          <div class="ai-avatar">💡</div>
+          <div>
+            <h3 style="font-size: 1rem; font-weight: 700;">Tutor Socrático IA</h3>
+            <p style="font-size: 0.75rem; color: var(--text-muted);">Apoio Pedagógico • Guia sem respostas prontas</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-outline btn-sm" onclick="limparChatIA()" title="Limpar conversa">🗑️️</button>
+          <button class="btn btn-outline btn-sm" onclick="fecharModalIA()">✕</button>
+        </div>
+      </div>
+
+      <div class="ai-chat-body" id="aiChatBody">
+        <div class="chat-bubble bot">
+          <div class="socratic-tag">✨ Mentor EPT</div>
+          Olá! Sou o assistente pedagógico. Minha missão é ajudar você a compreender o conteúdo das tarefas com perguntas e orientações, sem entregar as respostas prontas. Em qual atividade ou matéria você está com dúvidas no momento?
+        </div>
+      </div>
+
+      <div class="typing-indicator" id="aiTyping">
+        <span>🤖 Tutor IA está analisando sua pergunta...</span>
+      </div>
+
+      <form class="ai-footer" id="form-ai-chat" onsubmit="enviarMensagemIA(event)">
+        <input type="text" id="ai-input-text" placeholder="Escreva sua dúvida aqui..." required autocomplete="off">
+        <button type="submit" class="btn btn-ai btn-sm">Enviar</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    let atividades = JSON.parse(localStorage.getItem('ept_atividades')) || [];
+    let notas = JSON.parse(localStorage.getItem('ept_notas')) || [];
+    let chatHistory = JSON.parse(localStorage.getItem('ept_ai_chat')) || [];
+    let isProfessor = false;
+    const SENHA_MESTRE = "1234"; // Senha padrão de acesso do professor
+
+    let dataCalendario = new Date();
+    let chartInstance = null;
+
+    // Tabela de Feriados Nacionais e Municipais de Silvânia-GO (MM-DD)
+    const feriadosSilvania = {
+      // Nacionais
+      "01-01": { nome: "Confraternização Universal", tipo: "nacional" },
+      "04-21": { nome: "Tiradentes", tipo: "nacional" },
+      "05-01": { nome: "Dia do Trabalhador", tipo: "nacional" },
+      "09-07": { nome: "Independência do Brasil", tipo: "nacional" },
+      "10-12": { nome: "Nossa Senhora Aparecida", tipo: "nacional" },
+      "11-02": { nome: "Finados", tipo: "nacional" },
+      "11-15": { nome: "Proclamação da República", tipo: "nacional" },
+      "11-20": { nome: "Dia da Consciência Negra", tipo: "nacional" },
+      "12-25": { nome: "Natal", tipo: "nacional" },
+      
+      // Municipais de Silvânia - GO
+      "05-14": { nome: "Aniversário de Silvânia", tipo: "municipal" },
+      "09-14": { nome: "Nosso Senhor do Bonfim (Padroeiro)", tipo: "municipal" },
+      "10-05": { nome: "Emancipação de Silvânia", tipo: "municipal" }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('ept_theme') || 'dark';
+      document.body.setAttribute('data-theme', savedTheme);
+      
+      inicializarGrafico();
+      atualizarDashboard();
+      carregarHistoricoIA();
+      renderizarCalendario();
+    });
+
+    function toggleTheme() {
+      const currentTheme = document.body.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', newTheme);
+      localStorage.setItem('ept_theme', newTheme);
+      
+      if (chartInstance) {
+        chartInstance.options.plugins.legend.labels.color = newTheme === 'dark' ? '#94a3b8' : '#64748b';
+        chartInstance.update();
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `<span>${type === 'success' ? '✅' : type === 'danger' ? '⚠️' : 'ℹ️'}</span> ${message}`;
+      container.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    /* Gestão de Perfil (Aluno vs Professor) */
+    function abrirModalAuth() {
+      if (isProfessor) {
+        // Logout
+        isProfessor = false;
+        atualizarPermissoesUI();
+        showToast('Você voltou para o Modo Aluno.', 'info');
+      } else {
+        document.getElementById('authModal').style.display = 'flex';
+        document.getElementById('senha-prof').focus();
+      }
+    }
+
+    function fecharModalAuth() {
+      document.getElementById('authModal').style.display = 'none';
+      document.getElementById('senha-prof').value = '';
+    }
+
+    function autenticarProfessor(e) {
+      e.preventDefault();
+      const senha = document.getElementById('senha-prof').value;
+      if (senha === SENHA_MESTRE) {
+        isProfessor = true;
+        fecharModalAuth();
+        atualizarPermissoesUI();
+        showToast('Autenticado como Professor com sucesso!', 'success');
+      } else {
+        showToast('Senha incorreta! Tente novamente.', 'danger');
+      }
+    }
+
+    function atualizarPermissoesUI() {
+      const badge = document.getElementById('badge-perfil');
+      const btnToggle = document.getElementById('btn-toggle-perfil');
+
+      if (isProfessor) {
+        badge.className = "role-badge prof";
+        badge.innerText = "👨‍🏫 MODO PROFESSOR";
+        btnToggle.innerText = "🔓 Sair do Modo Professor";
+
+        document.querySelectorAll('.prof-only').forEach(el => el.style.display = 'flex');
+        document.querySelectorAll('.prof-only-col').forEach(el => el.style.display = 'table-cell');
+      } else {
+        badge.className = "role-badge aluno";
+        badge.innerText = "🎓 MODO ALUNO";
+        btnToggle.innerText = "🔒 Área do Professor";
+
+        document.querySelectorAll('.prof-only').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.prof-only-col').forEach(el => el.style.display = 'none');
+      }
+
+      renderizarNotas();
+      renderizarAtividades();
+    }
+
+    /* Calendario de Silvânia GO */
+    function renderizarCalendario() {
+      const grid = document.getElementById('cal-days-grid');
+      grid.innerHTML = '';
+
+      const ano = dataCalendario.getFullYear();
+      const mes = dataCalendario.getMonth();
+
+      const primeiroDia = new Date(ano, mes, 1).getDay();
+      const totalDias = new Date(ano, mes + 1, 0).getDate();
+
+      const nomesMeses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+      document.getElementById('cal-mes-ano').innerText = `${nomesMeses[mes]} / ${ano}`;
+
+      const hoje = new Date();
+
+      // Espaços em branco
+      for (let i = 0; i < primeiroDia; i++) {
+        const div = document.createElement('div');
+        div.className = 'cal-day empty';
+        grid.appendChild(div);
+      }
+
+      // Dias do mês
+      for (let dia = 1; dia <= totalDias; dia++) {
+        const div = document.createElement('div');
+        div.className = 'cal-day';
+
+        const dataAtualIterada = new Date(ano, mes, dia);
+        const diaSemana = dataAtualIterada.getDay();
+
+        // Formata chave MM-DD
+        const mm = String(mes + 1).padStart(2, '0');
+        const dd = String(dia).padStart(2, '0');
+        const chaveFeriado = `${mm}-${dd}`;
+
+        const isHoje = hoje.getFullYear() === ano && hoje.getMonth() === mes && hoje.getDate() === dia;
+        if (isHoje) div.classList.add('today');
+
+        if (diaSemana === 0 || diaSemana === 6) {
+          div.classList.add('weekend');
+        }
+
+        let tagHTML = '';
+        if (feriadosSilvania[chaveFeriado]) {
+          const feriado = feriadosSilvania[chaveFeriado];
+          if (feriado.tipo === 'nacional') {
+            div.classList.add('feriado-nacional');
+          } else {
+            div.classList.add('feriado-municipal');
+          }
+          tagHTML = `<div class="cal-event-tag" title="${feriado.nome}">${feriado.nome}</div>`;
+        }
+
+        div.innerHTML = `<span>${dia}</span>${tagHTML}`;
+        grid.appendChild(div);
+      }
+    }
+
+    function mudarMesCalendario(delta) {
+      dataCalendario.setMonth(dataCalendario.getMonth() + delta);
+      renderizarCalendario();
+    }
+
+    function inicializarGrafico() {
+      const ctx = document.getElementById('graficoStatus').getContext('2d');
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      
+      chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Aprovados', 'Recuperação'],
+          datasets: [{
+            data: [0, 0],
+            backgroundColor: ['#10b981', '#f43f5e'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { 
+                color: isDark ? '#94a3b8' : '#64748b', 
+                font: { size: 11, family: 'Inter' } 
+              }
+            }
+          },
+          cutout: '72%'
+        }
+      });
+    }
+
+    /* Modal IA Socrática */
+    function abrirModalIA() {
+      document.getElementById('aiModal').style.display = 'flex';
+      const chatBody = document.getElementById('aiChatBody');
+      chatBody.scrollTop = chatBody.scrollHeight;
+    }
+
+    function fecharModalIA() {
+      document.getElementById('aiModal').style.display = 'none';
+    }
+
+    function carregarHistoricoIA() {
+      const chatBody = document.getElementById('aiChatBody');
+      if (chatHistory.length > 0) {
+        chatHistory.forEach(msg => {
+          adicionarBolhaChat(msg.texto, msg.sender, false);
+        });
+      }
+    }
+
+    function adicionarBolhaChat(texto, sender, salvar = true) {
+      const chatBody = document.getElementById('aiChatBody');
+      const bubble = document.createElement('div');
+      bubble.className = `chat-bubble ${sender}`;
+
+      if (sender === 'bot') {
+        bubble.innerHTML = `<div class="socratic-tag">✨ Mentor EPT</div>${texto}`;
+      } else {
+        bubble.innerText = texto;
+      }
+
+      chatBody.appendChild(bubble);
+      chatBody.scrollTop = chatBody.scrollHeight;
+
+      if (salvar) {
+        chatHistory.push({ texto, sender });
+        localStorage.setItem('ept_ai_chat', JSON.stringify(chatHistory));
+      }
+    }
+
+    function limparChatIA() {
+      if (confirm('Deseja apagar o histórico de conversa com o Tutor IA?')) {
+        chatHistory = [];
+        localStorage.removeItem('ept_ai_chat');
+        const chatBody = document.getElementById('aiChatBody');
+        chatBody.innerHTML = `
+          <div class="chat-bubble bot">
+            <div class="socratic-tag">✨ Mentor EPT</div>
+            Conversa reiniciada. Em qual conceito você precisa de uma orientação por onde começar?
+          </div>
+        `;
+      }
+    }
+
+    function enviarMensagemIA(e) {
+      e.preventDefault();
+      const input = document.getElementById('ai-input-text');
+      const pergunta = input.value.trim();
+      if (!pergunta) return;
+
+      adicionarBolhaChat(pergunta, 'user');
+      input.value = '';
+
+      const typing = document.getElementById('aiTyping');
+      typing.style.display = 'flex';
+
+      setTimeout(() => {
+        typing.style.display = 'none';
+        const respostaSocratica = gerarRespostaSocratica(pergunta);
+        adicionarBolhaChat(respostaSocratica, 'bot');
+      }, 1000);
+    }
+
+    function gerarRespostaSocratica(pergunta) {
+      const p = pergunta.toLowerCase();
+
+      if (p.includes('resposta') || p.includes('resultado') || p.includes('gabarito')) {
+        return "Como seu Tutor Pedagógico, não posso dar a resposta pronta! 🧠 Vamos lá: qual é o primeiro passo ou fórmula que você acha que devemos testar?";
+      }
+
+      if (p.includes('matematica') || p.includes('calculo') || p.includes('média')) {
+        return "Para calcular médias: você lembra da regra da média aritmética dos 4 bimestres? Somamos as 4 notas e dividimos por qual valor?";
+      }
+
+      return "Boa pergunta! Para guiarmos sua linha de raciocínio sem entregar o resultado final: o que você já conseguiu compreender da questão até aqui?";
+    }
+
+    /* Importação CSV */
+    function importarCSV(event) {
+      if (!isProfessor) return;
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const linhas = e.target.result.split('\n');
+        let adicionados = 0;
+
+        linhas.forEach((linha, index) => {
+          if (index === 0 || !linha.trim()) return;
+
+          const colunas = linha.split(',');
+          if (colunas.length >= 6) {
+            const turma = colunas[0].trim();
+            const nome = colunas[1].trim();
+            const n1 = parseFloat(colunas[2]) || 0;
+            const n2 = parseFloat(colunas[3]) || 0;
+            const n3 = parseFloat(colunas[4]) || 0;
+            const n4 = parseFloat(colunas[5]) || 0;
+            const media = ((n1 + n2 + n3 + n4) / 4).toFixed(1);
+
+            notas.unshift({
+              id: Date.now() + index,
+              turma: turma || '1º EPT',
+              aluno: nome,
+              n1: n1.toFixed(1),
+              n2: n2.toFixed(1),
+              n3: n3.toFixed(1),
+              n4: n4.toFixed(1),
+              media: media,
+              status: media >= 6.0 ? 'Aprovado' : 'Recuperação'
+            });
+            adicionados++;
+          }
+        });
+
+        salvarEAtualizar();
+        showToast(`${adicionados} alunos importados com sucesso!`, 'success');
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    function gerarAlunosExemplo() {
+      if (!isProfessor) return;
+      const exemplos = [
+        { turma: '1º EPT', nome: 'Ana Souza', n1: 8.5, n2: 9.0, n3: 7.5, n4: 8.0 },
+        { turma: '1º B', nome: 'Bruno Lima', n1: 5.0, n2: 4.5, n3: 6.0, n4: 5.5 },
+        { turma: '2º EPT', nome: 'Carla Mendes', n1: 9.5, n2: 10.0, n3: 9.0, n4: 9.5 },
+        { turma: '2º B', nome: 'Diego Alves', n1: 6.0, n2: 6.5, n3: 7.0, n4: 6.0 },
+        { turma: '3º EPT', nome: 'Eduarda Costa', n1: 4.0, n2: 5.0, n3: 3.5, n4: 4.5 }
+      ];
+
+      exemplos.forEach((item, index) => {
+        const media = ((item.n1 + item.n2 + item.n3 + item.n4) / 4).toFixed(1);
+        notas.unshift({
+          id: Date.now() + index,
+          turma: item.turma,
+          aluno: item.nome,
+          n1: item.n1.toFixed(1),
+          n2: item.n2.toFixed(1),
+          n3: item.n3.toFixed(1),
+          n4: item.n4.toFixed(1),
+          media: media,
+          status: media >= 6.0 ? 'Aprovado' : 'Recuperação'
+        });
+      });
+
+      salvarEAtualizar();
+      showToast('5 alunos de teste gerados!', 'success');
+    }
+
+    /* Form Atividade */
+    document.getElementById('form-atividade').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!isProfessor) return;
+      
+      const editId = document.getElementById('edit-atividade-id').value;
+      const turma = document.getElementById('turma').value;
+      const disciplina = document.getElementById('disciplina').value;
+      const prazo = document.getElementById('prazo').value;
+      const titulo = document.getElementById('titulo').value;
+      const descricao = document.getElementById('descricao').value;
+
+      if (editId) {
+        atividades = atividades.map(item => item.id == editId ? {
+          ...item, turma, disciplina, prazo, titulo, descricao
+        } : item);
+        showToast('Atividade atualizada com sucesso!', 'success');
+      } else {
+        const novaAtividade = {
+          id: Date.now(),
+          turma,
+          disciplina,
+          prazo,
+          titulo,
+          descricao
+        };
+        atividades.unshift(novaAtividade);
+        showToast('Atividade publicada!', 'success');
+      }
+
+      cancelarEdicaoAtividade();
+      salvarEAtualizar();
+    });
+
+    function editarAtividade(id) {
+      if (!isProfessor) return;
+      const item = atividades.find(a => a.id === id);
+      if (!item) return;
+
+      document.getElementById('edit-atividade-id').value = item.id;
+      document.getElementById('turma').value = item.turma;
+      document.getElementById('disciplina').value = item.disciplina || '';
+      document.getElementById('prazo').value = item.prazo;
+      document.getElementById('titulo').value = item.titulo;
+      document.getElementById('descricao').value = item.descricao;
+
+      document.getElementById('form-atividade-title').innerText = '✏️ Editar Atividade';
+      document.getElementById('btn-submit-atividade').innerText = 'Salvar Alterações';
+      document.getElementById('btn-cancelar-edit-atividade').style.display = 'inline-block';
+    }
+
+    function cancelarEdicaoAtividade() {
+      document.getElementById('edit-atividade-id').value = '';
+      document.getElementById('form-atividade').reset();
+      document.getElementById('form-atividade-title').innerText = '📤 Cadastrar Nova Tarefa';
+      document.getElementById('btn-submit-atividade').innerText = 'Publicar Atividade';
+      document.getElementById('btn-cancelar-edit-atividade').style.display = 'none';
+    }
+
+    /* Form Nota */
+    document.getElementById('form-nota').addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (!isProfessor) return;
+
+      const editId = document.getElementById('edit-nota-id').value;
+      const turma = document.getElementById('aluno-turma').value;
+      const aluno = document.getElementById('aluno-nome').value;
+      const n1 = parseFloat(document.getElementById('nota1').value);
+      const n2 = parseFloat(document.getElementById('nota2').value);
+      const n3 = parseFloat(document.getElementById('nota3').value);
+      const n4 = parseFloat(document.getElementById('nota4').value);
+
+      const media = ((n1 + n2 + n3 + n4) / 4).toFixed(1);
+      const status = media >= 6.0 ? 'Aprovado' : 'Recuperação';
+
+      if (editId) {
+        notas = notas.map(item => item.id == editId ? {
+          ...item, turma, aluno, n1: n1.toFixed(1), n2: n2.toFixed(1), n3: n3.toFixed(1), n4: n4.toFixed(1), media, status
+        } : item);
+        showToast('Registro do aluno atualizado!', 'success');
+      } else {
+        const novaNota = {
+          id: Date.now(),
+          turma,
+          aluno,
+          n1: n1.toFixed(1),
+          n2: n2.toFixed(1),
+          n3: n3.toFixed(1),
+          n4: n4.toFixed(1),
+          media: media,
+          status: status
+        };
+        notas.unshift(novaNota);
+        showToast('Aluno cadastrado com sucesso!', 'success');
+      }
+
+      cancelarEdicaoNota();
+      salvarEAtualizar();
+    });
+
+    function editarNota(id) {
+      if (!isProfessor) return;
+      const item = notas.find(n => n.id === id);
+      if (!item) return;
+
+      document.getElementById('edit-nota-id').value = item.id;
+      document.getElementById('aluno-turma').value = item.turma || '1º EPT';
+      document.getElementById('aluno-nome').value = item.aluno;
+      document.getElementById('nota1').value = item.n1;
+      document.getElementById('nota2').value = item.n2;
+      document.getElementById('nota3').value = item.n3;
+      document.getElementById('nota4').value = item.n4;
+
+      document.getElementById('form-nota-title').innerText = '✏️ Editar Aluno / Notas';
+      document.getElementById('btn-submit-nota').innerText = 'Salvar Alterações';
+      document.getElementById('btn-cancelar-edit-nota').style.display = 'inline-block';
+    }
+
+    function cancelarEdicaoNota() {
+      document.getElementById('edit-nota-id').value = '';
+      document.getElementById('form-nota').reset();
+      document.getElementById('form-nota-title').innerText = '📊 Lançamento de Notas';
+      document.getElementById('btn-submit-nota').innerText = 'Salvar Registro de Notas';
+      document.getElementById('btn-cancelar-edit-nota').style.display = 'none';
+    }
+
+    function removerAtividade(id) {
+      if (!isProfessor) return;
+      if (confirm('Tem certeza que deseja excluir esta atividade?')) {
+        atividades = atividades.filter(item => item.id !== id);
+        salvarEAtualizar();
+        showToast('Atividade removida.', 'danger');
+      }
+    }
+
+    function removerNota(id) {
+      if (!isProfessor) return;
+      if (confirm('Tem certeza que deseja excluir o aluno?')) {
+        notas = notas.filter(item => item.id !== id);
+        salvarEAtualizar();
+        showToast('Aluno removido.', 'danger');
+      }
+    }
+
+    function salvarEAtualizar() {
+      localStorage.setItem('ept_atividades', JSON.stringify(atividades));
+      localStorage.setItem('ept_notas', JSON.stringify(notas));
+      atualizarDashboard();
+    }
+
+    function atualizarDashboard() {
+      renderizarAtividades();
+      renderizarNotas();
+
+      document.getElementById('total-atividades').innerText = atividades.length;
+      document.getElementById('total-alunos').innerText = notas.length;
+
+      let aprovados = 0;
+      let recuperacao = 0;
+
+      if (notas.length > 0) {
+        const somaMedias = notas.reduce((acc, item) => {
+          if (parseFloat(item.media) >= 6.0) aprovados++;
+          else recuperacao++;
+          return acc + parseFloat(item.media);
+        }, 0);
+        
+        const mediaGeral = (somaMedias / notas.length).toFixed(1);
+        const taxaAprovacao = ((aprovados / notas.length) * 100).toFixed(0);
+
+        document.getElementById('media-geral').innerText = mediaGeral;
+        document.getElementById('taxa-aprovacao').innerText = `${taxaAprovacao}%`;
+      } else {
+        document.getElementById('media-geral').innerText = '0.0';
+        document.getElementById('taxa-aprovacao').innerText = '0%';
+      }
+
+      if (chartInstance) {
+        chartInstance.data.datasets[0].data = [aprovados, recuperacao];
+        chartInstance.update();
+      }
+    }
+
+    function renderizarAtividades() {
+      const container = document.getElementById('lista-atividades');
+      const termoBusca = document.getElementById('busca-atividade') ? document.getElementById('busca-atividade').value.toLowerCase() : '';
+      const filtroTurma = document.getElementById('filtro-turma-atividade') ? document.getElementById('filtro-turma-atividade').value : '';
+      
+      container.innerHTML = '';
+
+      const filtradas = atividades.filter(a => {
+        const bateTermo = a.titulo.toLowerCase().includes(termoBusca) || 
+                          (a.disciplina && a.disciplina.toLowerCase().includes(termoBusca)) || 
+                          a.turma.toLowerCase().includes(termoBusca);
+        const bateTurma = filtroTurma === '' || a.turma === filtroTurma;
+        return bateTermo && bateTurma;
+      });
+
+      if (filtradas.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2rem;">Nenhuma atividade cadastrada para estes filtros.</p>';
+        return;
+      }
+
+      filtradas.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'task-card';
+        card.innerHTML = `
+          <div>
+            <div class="task-header">
+              <div class="task-title">${item.titulo}</div>
+              ${isProfessor ? `
+                <div style="display: flex; gap: 2px;">
+                  <button class="btn-action-icon" onclick="editarAtividade(${item.id})" title="Editar">✏️</button>
+                  <button class="btn-danger-icon" onclick="removerAtividade(${item.id})" title="Excluir">✕</button>
+                </div>
+              ` : ''}
+            </div>
+            <div class="task-tags" style="margin-top: 8px;">
+              <span class="tag" style="border-color: var(--primary);">🏫 ${item.turma}</span>
+              ${item.disciplina ? `<span class="tag">📖 ${item.disciplina}</span>` : ''}
+              <span class="tag">📅 ${formatarData(item.prazo)}</span>
+            </div>
+            <p style="margin-top: 12px; font-size: 0.88rem; color: var(--text-muted); line-height: 1.4;">${item.descricao}</p>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function renderizarNotas() {
+      const tabela = document.getElementById('tabela-notas');
+      const termoBusca = document.getElementById('busca-aluno') ? document.getElementById('busca-aluno').value.toLowerCase() : '';
+      const filtroTurma = document.getElementById('filtro-turma-tabela') ? document.getElementById('filtro-turma-tabela').value : '';
+      const filtroStatus = document.getElementById('filtro-status-tabela') ? document.getElementById('filtro-status-tabela').value : '';
+
+      tabela.innerHTML = '';
+
+      const filtradas = notas.filter(n => {
+        const bateNome = n.aluno.toLowerCase().includes(termoBusca);
+        const bateTurma = filtroTurma === '' || (n.turma || '1º EPT') === filtroTurma;
+        const bateStatus = filtroStatus === '' || n.status === filtroStatus;
+        return bateNome && bateTurma && bateStatus;
+      });
+
+      if (filtradas.length === 0) {
+        tabela.innerHTML = '<tr><td colspan="9" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Nenhum aluno encontrado para os filtros selecionados.</td></tr>';
+        return;
+      }
+
+      filtradas.forEach(item => {
+        const tr = document.createElement('tr');
+        const badgeClass = item.media >= 6.0 ? 'approved' : 'warning';
+        
+        tr.innerHTML = `
+          <td><span class="tag" style="font-size: 0.72rem;">${item.turma || '1º EPT'}</span></td>
+          <td><strong>${item.aluno}</strong></td>
+          <td>${item.n1}</td>
+          <td>${item.n2}</td>
+          <td>${item.n3}</td>
+          <td>${item.n4}</td>
+          <td><strong>${item.media}</strong></td>
+          <td><span class="status-badge ${badgeClass}">${item.status}</span></td>
+          ${isProfessor ? `
+            <td class="prof-only-col">
+              <button class="btn-action-icon" onclick="editarNota(${item.id})" title="Editar">✏️</button>
+              <button class="btn-danger-icon" onclick="removerNota(${item.id})" title="Excluir">✕</button>
+            </td>
+          ` : ''}
+        `;
+        tabela.appendChild(tr);
+      });
+    }
+
+    function formatarData(dataIso) {
+      if(!dataIso) return '-';
+      const [ano, mes, dia] = dataIso.split('-');
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    function exportarRelatorio() {
+      if (!isProfessor) return;
+      if (notas.length === 0) {
+        showToast('Não há registros para exportar.', 'danger');
+        return;
+      }
+
+      let csvContent = "data:text/csv;charset=utf-8,Turma,Aluno,Bimestre 1,Bimestre 2,Bimestre 3,Bimestre 4,Media Anual,Status\n";
+      notas.forEach(n => {
+        csvContent += `${n.turma || '1º EPT'},${n.aluno},${n.n1},${n.n2},${n.n3},${n.n4},${n.media},${n.status}\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "relatorio_escolar_completo.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Relatório exportado!', 'success');
+    }
+  </script>
+</body>
+</html>
